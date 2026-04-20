@@ -35,4 +35,3 @@ This project is built to deeply understand:
 This tool is for educational purposes only.
 =======
 # sentinel-lite
-ae5c21c34ae896f44e9d29578dceb7bf152c3a2f
