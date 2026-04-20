@@ -1,6 +1,8 @@
 import time
-from process_collector import get_processes
+
+from agent.process_collector import get_processes
 from utils.logger import log
+from utils.allowlist import is_safe
 
 # import detection modules
 import detections.reverse_shell as reverse_shell
@@ -14,16 +16,34 @@ DETECTIONS = [
 seen = set()
 
 def run_detection(process):
+    cmd = process["cmd"]
+
+    # 🔥 Skip safe processes
+    if is_safe(cmd):
+        return
+
     for module in DETECTIONS:
-        result = module.detect(process)
+        try:
+            result = module.detect(process)
+        except Exception as e:
+            # prevent one broken detection from crashing everything
+            log(f"[ERROR] {module.__name__}: {e}")
+            continue
+
         if result and process["pid"] not in seen:
             log(result)
             seen.add(process["pid"])
 
-while True:
-    processes = get_processes()
+def main():
+    log("Sentinel Lite started...")
 
-    for process in processes:
-        run_detection(process)
+    while True:
+        processes = get_processes()
 
-    time.sleep(2)
+        for process in processes:
+            run_detection(process)
+
+        time.sleep(2)
+
+if __name__ == "__main__":
+    main()
