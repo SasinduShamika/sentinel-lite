@@ -1,7 +1,8 @@
 import os
 
 def get_processes():
-    processes = []
+    processes = {}
+
     for pid in os.listdir('/proc'):
         if pid.isdigit():
             try:
@@ -12,13 +13,17 @@ def get_processes():
                     continue
 
                 with open(f'/proc/{pid}/stat', 'r') as f:
-                    ppid = f.read().split()[3]
+                    stat = f.read().split()
+                    ppid = stat[3]
+                    name = stat[1].strip("()")
 
-                processes.append({
+                processes[pid] = {
                     "pid": pid,
                     "ppid": ppid,
-                    "cmd": cmd
-                })
+                    "cmd": cmd,
+                    "name": name
+                }
             except:
                 continue
+
     return processes
